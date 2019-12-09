@@ -1,0 +1,28 @@
+{
+  "name": "minits-env",
+  "version": "1.0.0",
+  "description": "build the env for minits for win/mac/linux",
+  "bin": {
+    "minits": "dist/cli.ts"
+  },
+  "scripts": {
+    "postinstall": "ts-node src/postinstall.ts",
+    "build": "tsc"
+  },
+  "author": "wu",
+  "license": "MIT",
+  "dependencies": {
+    "@types/fs-extra": "^8.0.1",
+    "@types/node": "^12.12.14",
+    "@types/request": "^2.48.3",
+    "cli-color": "^2.0.0",
+    "commander": "^4.0.1",
+    "crypto": "^1.0.1",
+    "fs-extra": "^8.1.0",
+    "md5-file": "^4.0.0",
+    "request": "^2.88.0",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.3",
+    "util": "^0.12.1"
+  }
+}
