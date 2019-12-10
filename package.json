@@ -1,16 +1,16 @@
 {
-  "name": "minits-env",
-  "version": "1.0.15",
+  "name": "minits",
+  "version": "0.0.1",
   "description": "build the env for minits for win/mac/linux",
   "bin": {
     "minits": "dist/cli.js"
   },
   "scripts": {
-    "postinstall": "node -r ts-node/register src/postinstall.ts",
-    "build": "tsc"
+    "postinstall": "node dist/postinstall.js",
+    "build": "npx tsc"
   },
   "engines": {
-    "node": ">=10.16.0 <12.0.0"
+    "node": ">=10.13.0 <11.0.0"
   },
   "files": [
 	  "examples/",

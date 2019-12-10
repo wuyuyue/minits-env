@@ -1,7 +1,7 @@
 ## install
 
 ```
-npm install minits-env
+npm install minits -g
 ```
 
 ## usage

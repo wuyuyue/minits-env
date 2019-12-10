@@ -82,6 +82,7 @@ export const installDocker = async ():Promise<void>=>{
 
       } else if (type === 'linux') {
         childProcess.spawnSync('sh', ['./scripts/linux-19.03.4.sh'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('sh', ['./scripts/linux-sudo.sh'],{encoding: 'utf-8',stdio: 'inherit'})
         resolve()
       } else if (type === 'darwin') {
         childProcess.spawnSync('brew', ['install docker'],{encoding: 'utf-8',stdio: 'inherit'})
