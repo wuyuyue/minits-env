@@ -8,6 +8,7 @@ npm install minits -g
 
 ```
 minits --help
+minits env
 minits build *src* -o *dest*
 minits build *src* -o *dest* -u
 minits run *src*

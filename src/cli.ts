@@ -2,6 +2,8 @@
 
 import * as commander from 'commander';
 import * as bridge from './bridge'
+import {setEnvironment} from './env'
+
 const program = new commander.Command();
 
 program.version('v0.0.1');
@@ -27,5 +29,16 @@ program
   .description('compile to riscv')
   .option('-o, --output <output>', 'place the output into <file>')
   .action((args, opts) => bridge.riscv(args, opts));
+
+program
+.command('env')
+.description('install the minits environment by docker')
+.action((args, opts) => {
+  try{
+    setEnvironment()
+  }catch(e) {
+    console.error(e);
+  }
+});
 
 program.parse(process.argv);
