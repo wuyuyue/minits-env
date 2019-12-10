@@ -1,7 +1,7 @@
 ## install
 
 ```
-yarn add minits
+npm install minits-env
 ```
 
 ## usage
@@ -9,6 +9,7 @@ yarn add minits
 ```
 minits --help
 minits build *src* -o *dest*
+minits build *src* -o *dest* -u
 minits run *src*
 minits riscv *src* -o *dest*
 

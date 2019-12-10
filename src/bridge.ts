@@ -3,21 +3,11 @@ import {dockerImage} from './config'
 import * as path from 'path'
 import * as os from 'os'
 
-const getContainerId = ():string=>{
-  let conainerID = ""
-  var searchResult = childProcess.spawnSync('docker', ['ps',"--format","{{.ID}}:{{.Image}}"],{encoding: 'utf-8'});
-  if(searchResult.output){
-    searchResult.output.forEach((r:string)=>{
-      if(r && r.indexOf(dockerImage)>-1){
-        conainerID = r.split(":")[0]
-        return conainerID
-      }
-    })
-  }
-  return conainerID
-}
+
 
 const mapPrefix = "/share"
+const conainerName = 'minits'
+
 const mapPath = (path)=>{
   let result = path
   const type = os.type().toLowerCase()
@@ -38,7 +28,39 @@ const wslPath = (path)=>{
   return result.replace(/\\/g,'/')
 }
 
-const conainerID = 'minits'
+const isContainerStoped = ():boolean=>{
+  var searchResult = childProcess.spawnSync('docker', ['ps',"-a","--format","{{.Names}}:{{.Status}}"],{encoding: 'utf-8'});
+  const result = searchResult.output && searchResult.output.toString() 
+  if(result && result.indexOf(conainerName)>-1 && result.indexOf('Exited')>-1){
+    return true
+  }
+  return false
+}
+
+const restartContainer = ()=>{
+  if(isContainerStoped()){
+    console.info('container already exist, begin restart container')
+    try{
+      childProcess.spawnSync('docker', ['start',conainerName],{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+    }catch(e){
+      console.error('failed restart container',e,'\n')
+    }finally{
+      console.info('end restart container')
+    }
+  }
+}
+
+const updateContainer=()=>{
+  try{
+    console.info('begin update container')
+    childProcess.spawnSync('docker', ['exec',conainerName, 'bash','-c','cp -f -r /usr/lib/llvm-6.0 /usr/lib/llvm;cd /usr/lib/minits;git pull;npm install yarn -g;yarn;rm -f -r build;yarn build'],{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+  }catch(e){
+    console.error('failed update container',e,'\n')
+  }finally{
+    console.info('end update container')
+  }
+}
+
 export const build = (args, opts)=>{
   
   var source = args;
@@ -59,18 +81,16 @@ export const build = (args, opts)=>{
   //   otherArgs.push(`${mapPath(tripleFull)}`)
   // }
   try{
-      childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerID, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
-      // update minits
-      // try{
-      //   childProcess.spawnSync('docker', ['exec',conainerID, 'bash','-c','cd /usr/lib/minits;git pull;npm install yarn -g;yarn;rm -f -r build;yarn build'],{encoding: 'utf-8'});
-      // }catch(e){
-      //   console.error(e)
-      // }finally{
-        childProcess.spawnSync('docker', ['exec',conainerID, 'node','/usr/lib/minits/build/main/index.js','build', `${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
-      // }
-
-    }catch(err){
-    console.error(err)
+    if(isContainerStoped()){
+      restartContainer()
+    }
+    childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerName, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
+    if(opts.update){
+      updateContainer()
+    }
+    childProcess.spawnSync('docker', ['exec',conainerName, 'node','/usr/lib/minits/build/main/index.js','build', `${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+  }catch(err){
+    console.error(err,'\n')
     process.exit(-1)
   }
 }
@@ -85,10 +105,16 @@ export const run = (args, opts)=>{
     // otherArgs.push('-t')
   }
   try{
-      childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerID, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
-      childProcess.spawnSync('docker', ['exec',conainerID, 'node','/usr/lib/minits/build/main/index.js','run',`${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
-    }catch(err){
-    console.error(err)
+    if(isContainerStoped()){
+      restartContainer()
+    }
+    childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerName, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
+    if(opts.update){
+      updateContainer()
+    }
+    childProcess.spawnSync('docker', ['exec',conainerName, 'node','/usr/lib/minits/build/main/index.js','run',`${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+  }catch(err){
+    console.error(err,'\n')
     process.exit(-1)
   }
 }
@@ -102,10 +128,13 @@ export const riscv = (args, opts)=>{
   const dest = opts.output
   const destFull = path.resolve(dest)
   try{
-      childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerID, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
-      childProcess.spawnSync('docker', ['exec',conainerID, 'bash','/tmp/ts-to-riscv.sh',`${mapPath(sourceFull)}`,`${mapPath(destFull)}`],{encoding: 'utf-8',stdio: 'inherit',env:process.env});
-    }catch(err){
-    console.error(err)
+    if(isContainerStoped()){
+      restartContainer()
+    }
+    childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', conainerName, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
+    childProcess.spawnSync('docker', ['exec',conainerName, 'bash','/tmp/ts-to-riscv.sh',`${mapPath(sourceFull)}`,`${mapPath(destFull)}`],{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+  }catch(err){
+    console.error(err,'\n')
     process.exit(-1)
   }
 }

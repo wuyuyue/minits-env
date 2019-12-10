@@ -1,5 +1,5 @@
 const request = require("request");
-const md5File = require("md5-file");
+// const md5File = require("md5-file");
 const path = require("path");
 const fs = require("fs");
 const fse = require("fs-extra");
@@ -10,16 +10,14 @@ const lstatPromise = nodeUtil.promisify(fs.lstat);
 const removePromise = nodeUtil.promisify(fse.remove);
 const pathExistsPromise = nodeUtil.promisify(fse.pathExists);
 const ensureDirPromise = nodeUtil.promisify(fse.ensureDir);
-//获取响应头信息
 function getResHeaders(url) {
   return new Promise(function(resolve, reject) {
     request(
       {
         url,
-        method: "GET", //请求方式
+        method: "GET", 
         forever: true,
         headers: {
-          //请求头
           "Cache-Control": "no-cache",
           Range: "bytes=0-1"
         }
@@ -55,7 +53,7 @@ async function createDownloadTask({
       let localSize = 0;
       let acceptRanges = headers["accept-ranges"];
       if (acceptRanges !== "bytes") {
-        emitter.emit("error", new Error("资源不支持断点下载"));
+        emitter.emit("error", new Error("not support accept-ranges"));
         return;
       }
       emitter.emit("totalSize", { totalSize });
@@ -63,10 +61,10 @@ async function createDownloadTask({
         let stat = await lstatPromise(destinationPath);
         localSize = stat.size;
         if (
-          localSize === totalSize &&
-          (!md5 || md5File.sync(destinationPath) === md5)
+          localSize === totalSize //&&
+          // (!md5 || md5File.sync(destinationPath) === md5)
         ) {
-          console.log("文件已下载");
+          console.log("file alread downloaded\n");
           emitter.emit("progress", {
             percent: 100,
             localSize,
@@ -85,7 +83,7 @@ async function createDownloadTask({
       }
 
       if (fileWrite || downStream) {
-        console.warn("正在下载请稍后");
+        console.warn("downloading...\n");
         return;
       }
       fileWrite = fs.createWriteStream(destinationPath, {
@@ -117,19 +115,19 @@ async function createDownloadTask({
                 fileWrite.end();
                 fileWrite = null;
               }
-              if (md5 && md5File.sync(destinationPath) !== md5) {
-                emitter.emit("error", new Error("文件md5校验错误"));
-                if (downStream) {
-                  downStream.abort();
-                  downStream = null;
-                }
-                if (fileWrite) {
-                  fileWrite.end();
-                  fileWrite = null;
-                }
-                removePromise(destinationPath);
-                return;
-              }
+              // if (md5 && md5File.sync(destinationPath) !== md5) {
+              //   emitter.emit("error", new Error("file md5 verify error"));
+              //   if (downStream) {
+              //     downStream.abort();
+              //     downStream = null;
+              //   }
+              //   if (fileWrite) {
+              //     fileWrite.end();
+              //     fileWrite = null;
+              //   }
+              //   removePromise(destinationPath);
+              //   return;
+              // }
               ended = true;
               emitter.emit("end", {
                 filepath: destinationPath
@@ -140,7 +138,7 @@ async function createDownloadTask({
                 fileWrite.end();
                 fileWrite = null;
               }
-              emitter.emit("error", new Error("文件大小错误"));
+              emitter.emit("error", new Error("file size error"));
             }
           });
         })
@@ -153,11 +151,11 @@ async function createDownloadTask({
             fileWrite.end();
             fileWrite = null;
           }
-          emitter.emit("abort", new Error("下载中断"));
+          emitter.emit("abort", new Error("download interupted"));
         })
         .on("error", function(err) {
-          console.error(err);
-          emitter.emit("error", new Error("下载出错"));
+          console.error(err,'\n');
+          emitter.emit("error", new Error("download error"));
           downStream = null;
           if (fileWrite) {
             fileWrite.end();
@@ -172,8 +170,8 @@ async function createDownloadTask({
           downStream = null;
         });
     } catch (e) {
-      console.error(e);
-      emitter.emit("error", new Error("程序出错"));
+      console.error(e,'\n');
+      emitter.emit("error", new Error("unknown error"));
     }
   });
   emitter.on("stop", function() {

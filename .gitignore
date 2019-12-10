@@ -3,3 +3,4 @@ node_modules
 dist
 /examples
 !/examples/**.ts
+yarn-error.log

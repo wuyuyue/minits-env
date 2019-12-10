@@ -2,7 +2,7 @@ import * as os from 'os'
 import * as childProcess from 'child_process'
 import * as  fse from 'fs-extra'
 import * as path from 'path'
-const createDownloadTask = require('./download.js')
+const createDownloadTask = require('./download')
 
 import {win10ToolBoxUrl,dockerImage} from '../config'
 
@@ -20,9 +20,9 @@ ensureDirSync(LOCAL_CACHE_DIR);
 export const checkDocker=():boolean=>{
   try{
     var result = childProcess.spawnSync('docker', ['--version'],{encoding: 'utf-8'});
-    return !result.stderr
+    return !result.error && !result.stderr
   }catch(e) {
-    console.error(e)
+    console.error(e,'\n')
     return false
   }
   
@@ -34,7 +34,7 @@ export const installDocker = async ():Promise<void>=>{
     try {
       const type = os.type().toLowerCase()
       if (type === 'windows_nt') {
-        console.info('start install docker-toolbox')
+        console.info('start install docker-toolbox\n')
         const zipFilename = 'toolbox.exe'
         const tmpdir = LOCAL_CACHE_DIR;
           createDownloadTask({
@@ -46,37 +46,33 @@ export const installDocker = async ():Promise<void>=>{
             task.emit("start");
             task
               .on("totalSize", function({ totalSize }) {
-                console.log("get total size", totalSize);
+                console.log("get total size", totalSize,'\n');
               })
               .on("progress", function({ percent }) {
-                console.log("on progress", percent);
+                console.log("on progress", percent,'\n');
               })
               .on("end", function({ filepath }) {
-                console.log("on end", filepath);
+                console.log("on end", filepath,'\n');
                 try{
-                var env = Object.assign({}, process.env);
-                var SEPARATOR = process.platform === 'win32' ? ';' : ':';
-                // env.Path = path.resolve('C:/Program Files/Git/bin') + SEPARATOR + env.Path
-                // "C:\Program Files\Git\bin\bash.exe" --login -i "C:\Program Files\Docker Toolbox\start.sh"
-                env.Path = path.resolve('C:/Program Files/Docker Toolbox') + SEPARATOR + env.Path
-                childProcess.execFileSync('docker-start.cmd',{cwd: path.resolve('C:/Program Files/Docker Toolbox'),encoding: 'utf-8',stdio: 'inherit',env})
-
-                
-              }catch(e){
-                  console.error(e,1111111111111111)
+                  var env = Object.assign({}, process.env);
+                  var SEPARATOR = process.platform === 'win32' ? ';' : ':';
+                  // env.Path = path.resolve('C:/Program Files/Git/bin') + SEPARATOR + env.Path
+                  // "C:\Program Files\Git\bin\bash.exe" --login -i "C:\Program Files\Docker Toolbox\start.sh"
+                  env.Path = path.resolve('C:/Program Files/Docker Toolbox') + SEPARATOR + env.Path
+                  childProcess.execFileSync('docker-start.cmd',{cwd: path.resolve('C:/Program Files/Docker Toolbox'),encoding: 'utf-8',stdio: 'inherit',env})
+                }catch(e){
+                  console.error(e,'\n')
                 }
-                // console.info(process.env)  
-
                 resolve()
               })
               .on("error", function(err) {
-                console.log("on error", err);
+                console.log("on error", err,'\n');
                 reject()
                 process.exit(-1)
                 // clearInterval(st);
               })
               .on("abort", function() {
-                console.log("on abort");
+                console.log("on abort\n");
                 reject()
                 process.exit(-1)
               });
@@ -91,12 +87,12 @@ export const installDocker = async ():Promise<void>=>{
         childProcess.spawnSync('brew', ['install docker'],{encoding: 'utf-8',stdio: 'inherit'})
         resolve()
       } else {
-        console.info('not supported OS')
+        console.info('not supported OS\n')
         reject()
       }
     }catch(e){
-      console.error(e)
-      console.error('encountered unknown error, please install the docker yourself')
+      console.error(e,'\n')
+      console.error('encountered unknown error, please install the docker yourself\n')
       reject()
       process.exit(-1)
     }
@@ -106,12 +102,13 @@ export const installDocker = async ():Promise<void>=>{
 export const checkDockerImage = (): boolean=>{
   try{
     var result = childProcess.spawnSync('docker', ['images'],{encoding: 'utf-8'});
-    if(result && result.output && result.output.toString().indexOf(dockerImage)>-1){
+    if(result && !result.error && result.output && result.output.toString() && result.output.toString().indexOf(dockerImage)>-1){
       return true
     }
     return false
   }catch(e) {
-    console.error(e)
+    console.error(e,'\n')
+    process.exit(-1)
     return false
   }
 }
@@ -121,7 +118,7 @@ export const installDockerImage =():void=>{
   try {
     childProcess.spawnSync('docker', [`pull`, dockerImage],{encoding: 'utf-8',stdio: 'inherit'})
   }catch(e) {
-    console.error(e)
+    console.error(e,'\n')
     process.exit(-1)
   }
   

@@ -11,12 +11,14 @@ program
   .description('compile packages and dependencies')
   .option('-o, --output <output>', 'place the output into <file>')
   .option('-s, --show', 'show IR code to stdout')
+  .option('-u, --update', 'update minits env')
   // .option('-t, --triple <triple>', 'LLVM triple')
   .action((args, opts) => bridge.build(args, opts));
 
 program
   .command('run <file>')
   .description('compile and run ts program')
+  .option('-u, --update', 'update minits env')
   // .option('-t, --triple <triple>', 'LLVM triple')
   .action((args, opts) => bridge.run(args, opts));
 
