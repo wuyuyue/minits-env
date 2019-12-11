@@ -3,3 +3,6 @@ export const win10ToolBoxUrl = 'http://mirrors.aliyun.com/docker-toolbox/windows
 // export const win10ToolBoxInitPath = 'C:\\Program Files\\Docker Toolbox\\start.sh'
 export const linuxDockerInstallShellUrl = 'https://raw.githubusercontent.com/rancher/install-docker/master/19.03.4.sh'
 export const dockerImage = 'linyonghui/coto'
+
+import * as os from 'os'
+export const LOCAL_CACHE_DIR = os.homedir() + '/.docker-cache';

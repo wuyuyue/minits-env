@@ -4,9 +4,8 @@ import * as  fse from 'fs-extra'
 import * as path from 'path'
 const createDownloadTask = require('./download')
 
-import {win10ToolBoxUrl,dockerImage} from '../config'
+import {win10ToolBoxUrl,dockerImage,LOCAL_CACHE_DIR} from '../config'
 
-var LOCAL_CACHE_DIR = os.homedir() + '/.docker-cache';
 
 function ensureDirSync(dir) {
   try {
