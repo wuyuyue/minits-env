@@ -1,6 +1,6 @@
 {
   "name": "minits",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "build the env for minits for win/mac/linux",
   "bin": {
     "minits": "dist/cli.js"

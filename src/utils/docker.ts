@@ -84,7 +84,13 @@ export const installDocker = async ():Promise<void>=>{
         childProcess.spawnSync('sh', [path.join(__dirname,'../../scripts/linux-sudo.sh')],{encoding: 'utf-8',stdio: 'inherit'})
         resolve()
       } else if (type === 'darwin') {
-        childProcess.spawnSync('brew', ['install docker'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('brew', ['tap'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('brew', ['install','docker'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('brew', ['install','docker-machine'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('brew', ['cask','install','virtualbox'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('docker-machine', ['create','--driver','virtualbox','default'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('docker-machine', ['env','default'],{encoding: 'utf-8',stdio: 'inherit'})
+        childProcess.spawnSync('eval', ['$(docker-machine env default)'],{encoding: 'utf-8',stdio: 'inherit'})
         resolve()
       } else {
         console.info('not supported OS\n')
