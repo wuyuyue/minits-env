@@ -2,12 +2,10 @@
   "compilerOptions": {
     "target": "es5",
     "moduleResolution": "node",
-    // "strict": true,
-    // "module": "amd",
     "outDir": "dist",
     "typeRoots": [
       "./types",
-      "node_modules/@types",
+      "node_modules/@types"
     ]
   },
   "include": [

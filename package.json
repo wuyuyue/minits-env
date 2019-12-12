@@ -1,12 +1,11 @@
 {
   "name": "minits",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "build the env for minits for win/mac/linux",
   "bin": {
     "minits": "dist/cli.js"
   },
   "scripts": {
-    "preinstall": "npx tsc",
     "postinstall": "node dist/postinstall.js",
     "build": "npx tsc",
     "prepublish": "npm run build"
