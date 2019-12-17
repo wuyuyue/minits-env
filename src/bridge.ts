@@ -131,13 +131,18 @@ export const run = (args, opts)=>{
     // otherArgs.push('-t')
   }
   try{
-    const containerName = `${defaultContainerName}-${wslPath(originPrefix).replace('/','')}`
+    const containerName = `${defaultContainerName}-${wslPath(originPrefix).replace(/\//g,'')}`
+    console.error(containerName)
     setLatestContainerName(containerName)
     if(isContainerStoped(containerName)){
       restartContainer(containerName)
     }
     childProcess.spawnSync('docker', ['run','-itd','-v', vCommand,'--name', containerName, dockerImage, '/bin/bash'],{encoding: 'utf-8'});
-    childProcess.spawnSync('docker', ['exec',containerName, 'node','/usr/lib/minits/build/main/index.js','run',`${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+    // childProcess.spawnSync('docker', ['exec',containerName, 'node','/usr/lib/minits/build/main/index.js','run',`${mapPath(sourceFull)}`].concat(otherArgs),{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+    // echo $?
+    const command = ['node','/usr/lib/minits/build/main/index.js','run',`${mapPath(sourceFull)}`]
+    childProcess.spawnSync('docker', ['exec',containerName, 'bash','-c',`${command.join(' ')};echo $?`],{encoding: 'utf-8',stdio: 'inherit',env:process.env});
+
   }catch(err){
     console.error(err,'\n')
     process.exit(-1)
@@ -153,7 +158,7 @@ export const riscv = (args, opts)=>{
   const dest = opts.output
   const destFull = path.resolve(dest)
   try{
-    const containerName = `${defaultContainerName}-${wslPath(originPrefix).replace('/','')}`
+    const containerName = `${defaultContainerName}-${wslPath(originPrefix).replace(/\//g,'')}`
     setLatestContainerName(containerName)
 
     if(isContainerStoped(containerName)){
